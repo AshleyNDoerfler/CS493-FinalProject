@@ -24,6 +24,11 @@ exports.AssignmentsSchema = AssignmentsSchema
  */
 async function insertNewAssignment(assignment) {
   assignment = extractValidFields(assignment, AssignmentsSchema)
+  if (ObjectId.isValid(assignment.courseId)) {
+    assignment.courseId = new ObjectId(assignment.courseId);
+  } else {
+    return null;
+  }
   const db = getDbReference()
   const collection = db.collection('assignments')
   const result = await collection.insertOne(assignment)
@@ -50,6 +55,18 @@ async function getAssignmentById(id) {
 }
 exports.getAssignmentById = getAssignmentById
 
+async function getAssignmentsByCourseId(courseId) {
+    const db = getDbReference()
+    const collection = db.collection('assignments')
+    if (!ObjectId.isValid(id)) {
+        return null
+    } else {
+        const files = await collection
+        .find({ "courseId": new ObjectId(courseId) });
+        return files
+    }
+}
+
 async function deleteAssignmentById(id) {
     const db = getDbReference()
     const collection = db.collection('assignments')
@@ -69,6 +86,7 @@ async function updateAssignmentById(id, data) {
     if (!ObjectId.isValid(id)) {
         return null
     } else {
+        data = extractValidFields(data, AssignmentsSchema)
         const result = await collection
         .updateOne({ "_id": new ObjectId(id) }, { $set: data });
         return result
