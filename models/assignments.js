@@ -30,3 +30,22 @@ async function insertNewAssignment(assignment) {
   return result.insertedId
 }
 exports.insertNewAssignment = insertNewAssignment
+
+/*
+ * Executes a DB query to fetch detailed information about a single
+ * specified assignment based on its ID. Returns a Promise that resolves to an object containing
+ * information about the requested assignment.  If no assignment with the
+ * specified ID exists, the returned Promise will resolve to null.
+ */
+async function getAssignmentById(id) {
+  const db = getDbReference()
+  const collection = db.collection('assignments')
+  if (!ObjectId.isValid(id)) {
+    return null
+  } else {
+    const file = await collection
+      .findOne({ "_id": new ObjectId(id) });
+    return file
+  }
+}
+exports.getAssignmentById = getAssignmentById
