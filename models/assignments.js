@@ -62,3 +62,16 @@ async function deleteAssignmentById(id) {
     }
 }
 exports.deleteAssignmentById = deleteAssignmentById
+
+async function updateAssignmentById(id, data) {
+    const db = getDbReference()
+    const collection = db.collection('assignments')
+    if (!ObjectId.isValid(id)) {
+        return null
+    } else {
+        const result = await collection
+        .updateOne({ "_id": new ObjectId(id) }, { $set: data });
+        return result
+    }
+}
+exports.updateAssignmentById = updateAssignmentById

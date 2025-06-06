@@ -9,7 +9,8 @@ const {
   AssignmentsSchema,
   insertNewAssignment,
   getAssignmentById,
-  deleteAssignmentById
+  deleteAssignmentById,
+  updateAssignmentById
 } = require('../models/assignments')
 
 const router = Router()
@@ -71,15 +72,35 @@ router.get('/:id', async (req, res, next) => {
 })
 
 /*
+ * PATCH /assignments/{id} - Route to update a specific assignment.
+ */
+router.patch('/:id', async (req, res, next) => {
+  try {
+    const result = await updateAssignmentById(req.params.id, req.body)
+    if (result.matchedCount > 0) {
+      res.status(200).send({"status": `Assignment updated`});
+    } else {
+      next()
+    }
+  } catch (err) {
+    console.error(err)
+    res.status(500).send({
+      error: "Unable to update assignment.  Please try again later."
+    })
+  }
+})
+
+/*
  * DELETE /assignments/{id} - Route to delete a specific assignment.
  */
 router.delete('/:id', async (req, res, next) => {
   try {
-    const result = await deleteAssignmentById(req.params.id)
+    const id = req.params.id
+    const result = await deleteAssignmentById(id)
     if (result.deletedCount > 0) {
-      res.status(200).send({"status": `message ${id} deleted`});
+      res.status(200).send({"status": `Assignment ${id} deleted`});
     } else {
-      res.status(404).send({"error": `Message ${id} not found`});
+      res.status(404).send({"error": `Assignment ${id} not found`});
       console.log(`== ID ${id} not found`);
       next()
     }
