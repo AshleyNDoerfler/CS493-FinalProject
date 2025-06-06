@@ -8,7 +8,8 @@ const { validateAgainstSchema } = require('../lib/validation')
 const {
   AssignmentsSchema,
   insertNewAssignment,
-  getAssignmentById
+  getAssignmentById,
+  deleteAssignmentById
 } = require('../models/assignments')
 
 const router = Router()
@@ -59,6 +60,27 @@ router.get('/:id', async (req, res, next) => {
     if (assignment) {
       res.status(200).send(assignment)
     } else {
+      next()
+    }
+  } catch (err) {
+    console.error(err)
+    res.status(500).send({
+      error: "Unable to fetch assignment.  Please try again later."
+    })
+  }
+})
+
+/*
+ * DELETE /assignments/{id} - Route to delete a specific assignment.
+ */
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const result = await deleteAssignmentById(req.params.id)
+    if (result.deletedCount > 0) {
+      res.status(200).send({"status": `message ${id} deleted`});
+    } else {
+      res.status(404).send({"error": `Message ${id} not found`});
+      console.log(`== ID ${id} not found`);
       next()
     }
   } catch (err) {

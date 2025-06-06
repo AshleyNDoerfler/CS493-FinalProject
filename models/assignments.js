@@ -49,3 +49,16 @@ async function getAssignmentById(id) {
   }
 }
 exports.getAssignmentById = getAssignmentById
+
+async function deleteAssignmentById(id) {
+    const db = getDbReference()
+    const collection = db.collection('assignments')
+    if (!ObjectId.isValid(id)) {
+        return null
+    } else {
+        const result = await collection
+        .deleteOne({ "_id": new ObjectId(id) });
+        return result
+    }
+}
+exports.deleteAssignmentById = deleteAssignmentById
