@@ -2,7 +2,7 @@ const { Router } = require('express')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const { insertNewUser, getUserById, UserSchema } = require('../models/user')
+const { insertNewUser, getUserById, getUserByEmail, UserSchema } = require('../models/user')
 const { validateAgainstSchema } = require('../lib/validation')
 
 const router = Router()
@@ -80,7 +80,7 @@ router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, re
 /*
  * Authenticate a specific User with their email address and password.
  */
-router.post('/users/login', requireAutorization, isAuthorizedUser, async (req, res) => {
+router.post('/login', requireAutorization, isAuthorizedUser, async (req, res) => {
     const email = req.body.email
     const password = req.body.password
 
@@ -89,7 +89,7 @@ router.post('/users/login', requireAutorization, isAuthorizedUser, async (req, r
         return res.status(400).send({error: "Email and password required"})
     }
 
-    const result = await getUserById(email)
+    const result = await getUserByEmail(email)
 
     const password_hash = result.password;
     const is_password = await bcrypt.compare(password, password_hash);
@@ -105,4 +105,57 @@ router.post('/users/login', requireAutorization, isAuthorizedUser, async (req, r
         res.status(401).json({ error: "Incorrect username or password" })
         console.log(`== Failed login for user ${username}`)
       }
+})
+
+/*
+ * Returns information about the specified User.
+ * 
+ * if the User has the 'instructor' role, the response should
+ * include a list of the IDs of the Courses the User teaches
+ * 
+ * if the User has the 'student' role, the response should 
+ * include a list of the IDs of the Courses the User is 
+ * enrolled in
+ * 
+ * Only an authenticated User whose ID matches the ID of 
+ * the requested User can fetch this information.
+ * 
+ */
+router.get('/:id', requireAutorization, async (req, res) => {
+    try {
+        const reqId = req.params.id
+        const user = req.user
+
+        if (user.id !== reqId) {
+            return res.status(403).send({ error: "User not authorized" })
+        }
+
+        const reqUser = await getUserById(reqId)
+
+        if (!reqUser) {
+            return res.status(404).json({ error: 'User not found' })
+        }
+
+        const userInfo = {
+            id: reqUser._id.toString(),
+            name: reqUser.name,
+            email: reqUser.email,
+            role: reqUser.role
+        }
+
+        const courses = []
+        if (reqUser.role === 'instructor') {
+            courses = await getCoursesByInstructorId(requestedId)
+        } else if (reqUser.role === 'student') {
+            courses = await getCoursesByStudentId(requestedId)
+        }
+
+        // Not sure how we should send this. Spec mentions
+        // including a list of courses, but doesn't show 
+        // in response format
+        res.status(200).json(userInfo, courses) 
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: 'Failed to fetch user info' })
+    }
 })

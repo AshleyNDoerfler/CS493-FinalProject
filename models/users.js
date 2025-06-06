@@ -40,7 +40,7 @@ async function insertNewUser(userData) {
 exports.insertNewUser = insertNewUser
 
 /*
- * Get a User from the database by id
+ * Get a User from the database by email
  */
 async function getUserByEmail(email) {
   const db = getDbReference()
@@ -49,3 +49,32 @@ async function getUserByEmail(email) {
 }
 
 exports.getUserByEmail = getUserByEmail
+
+/*
+ * Get a User from the database by id
+ */
+async function getUserById(id) {
+    const db = getDbReference()
+    const collection = db.collection('users')
+    return await collection.findOne({ _id: id })
+}
+  
+exports.getUserById = getUserById
+
+/*
+ * Return a User's (instructor) courses
+ */
+async function getCoursesByInstructorId(id) {
+    // Too tired to finish this tonight
+}
+
+exports.getCoursesByInstructorId = getCoursesByInstructorId
+
+/*
+ * Return a User's (student) courses
+ */
+async function getCoursesByStudentId(id) {
+    // Too tired to finish this tonight
+}
+
+exports.getCoursesByStudentId = getCoursesByStudentId
