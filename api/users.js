@@ -1,7 +1,8 @@
 const { Router } = require('express')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcryptjs')
 
-const { insertNewUser, UserSchema } = require('../models/user')
+const { insertNewUser, getUserById, UserSchema } = require('../models/user')
 const { validateAgainstSchema } = require('../lib/validation')
 
 const router = Router()
@@ -63,7 +64,7 @@ function isAuthorizedUser(...allowedRoles) {
 /*
  * Authenticated Admin can create a User
  */
-router.post('/users', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
+router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
     if (!validateAgainstSchema(req.body, UserSchema)) {
         return res.status(400).json({ error: "Missing or invalid user fields" })
     }
@@ -74,4 +75,34 @@ router.post('/users', requireAuthorization, isAuthorizedUser('admin'), async (re
     } catch (e) {
         console.error(e)
     }
+})
+
+/*
+ * Authenticate a specific User with their email address and password.
+ */
+router.post('/users/login', requireAutorization, isAuthorizedUser, async (req, res) => {
+    const email = req.body.email
+    const password = req.body.password
+
+
+    if (!email || !password) {
+        return res.status(400).send({error: "Email and password required"})
+    }
+
+    const result = await getUserById(email)
+
+    const password_hash = result.password;
+    const is_password = await bcrypt.compare(password, password_hash);
+
+    if(is_password) {
+        payload = { "sub": result.id, admin: result.admin }
+        expiration = { "expiresIn": "24h" }
+        token = jwt.sign(payload, process.env.JWT_SECRET_KEY, expiration)
+        res.status(200).send({
+            token
+        })
+      } else {
+        res.status(401).json({ error: "Incorrect username or password" })
+        console.log(`== Failed login for user ${username}`)
+      }
 })

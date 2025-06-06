@@ -4,7 +4,7 @@
 
 const bcrypt = require('bcrypt');
 
-const { ObjectId } = require('mongodb')
+// const { ObjectId } = require('mongodb')
 
 const { getDbReference } = require('../lib/mongo')
 const { extractValidFields } = require('../lib/validation')
@@ -42,10 +42,10 @@ exports.insertNewUser = insertNewUser
 /*
  * Get a User from the database by id
  */
-async function getUserById(id) {
+async function getUserByEmail(email) {
   const db = getDbReference()
   const collection = db.collection('users')
-  return await collection.findOne({ _id: new ObjectId(id) })
+  return await collection.findOne({ email: email })
 }
 
-exports.getUserById = getUserById
+exports.getUserByEmail = getUserByEmail
