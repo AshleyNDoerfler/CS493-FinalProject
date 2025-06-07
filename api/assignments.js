@@ -13,7 +13,10 @@ const storage = new GridFsStorage({
     file: (req, file) => {
         return {
             filename: file.originalname,
-            bucketName: 'uploads'
+            bucketName: 'submissions',
+            metadata: {
+              "assignmentId": req.params.id
+            }
         };
     },
 });
@@ -28,6 +31,7 @@ const {
   getAssignmentById,
   deleteAssignmentById,
   updateAssignmentById,
+  getSubmissionsPage
 } = require('../models/assignments')
 
 const router = Router()
@@ -114,6 +118,34 @@ router.delete('/:id', async (req, res, next) => {
     console.error(err)
     res.status(500).send({
       error: "Unable to fetch assignment.  Please try again later."
+    })
+  }
+})
+
+/*
+ * GET /assignments/submissions - Route to return a paginated list of submissions for an assignment.
+ */
+router.get('/:id/submissions', async (req, res) => {
+  try {
+    /*
+     * Fetch page info, generate HATEOAS links for surrounding pages and then
+     * send response.
+     */
+    const submissionsPage = await getSubmissionsPage(parseInt(req.query.page) || 1)
+    submissionsPage.links = {}
+    if (submissionsPage.page < submissionsPage.totalPages) {
+      submissionsPage.links.nextPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.page + 1}`
+      submissionsPage.links.lastPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.totalPages}`
+    }
+    if (submissionsPage.page > 1) {
+      submissionsPage.links.prevPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.page - 1}`
+      submissionsPage.links.firstPage = `/assignments/${req.params.id}/submissions?page=1`
+    }
+    res.status(200).send(submissionsPage)
+  } catch (err) {
+    console.error(err)
+    res.status(500).send({
+      error: "Error fetching submissions list.  Please try again later."
     })
   }
 })
