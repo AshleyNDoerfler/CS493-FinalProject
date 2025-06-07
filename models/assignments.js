@@ -109,26 +109,35 @@ exports.updateAssignmentById = updateAssignmentById
  * Executes a DB query to return a single page of submissions.  Returns a
  * Promise that resolves to an array containing the fetched page of submissions.
  */
-async function getSubmissionsPage(page) {
+async function getSubmissionsPage(page, assignmentId) {
   const db = getDbReference()
-  const collection = db.collection('submissions')
-  const count = await collection.countDocuments()
+    const files = await db.collection('submissions.files')
+      .find({ "metadata.assignmentId": assignmentId });
+    const count = await db.collection('submissions.files').countDocuments({ "metadata.assignmentId": assignmentId })
 
   /*
    * Compute last page number and make sure page is within allowed bounds.
    * Compute offset into collection.
    */
-  const pageSize = 10
+  const pageSize = 5
   const lastPage = Math.ceil(count / pageSize)
   page = page > lastPage ? lastPage : page
   page = page < 1 ? 1 : page
   const offset = (page - 1) * pageSize
 
-  const results = await collection.find({})
+  let results = await files
     .sort({ _id: 1 })
     .skip(offset)
     .limit(pageSize)
     .toArray()
+
+  results = results.map((r)=> ({
+    _id: r._id,
+    assignmentId: r.metadata.assignmentId,
+    studentId: r.metadata.studentId,
+    timestamp: r.metadata.timestamp,
+    grade: r.metadata.grade
+  }))
 
   return {
     submissions: results,

@@ -131,7 +131,7 @@ router.get('/:id/submissions', async (req, res) => {
      * Fetch page info, generate HATEOAS links for surrounding pages and then
      * send response.
      */
-    const submissionsPage = await getSubmissionsPage(parseInt(req.query.page) || 1)
+    const submissionsPage = await getSubmissionsPage(parseInt(req.query.page) || 1, req.params.id)
     submissionsPage.links = {}
     if (submissionsPage.page < submissionsPage.totalPages) {
       submissionsPage.links.nextPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.page + 1}`
