@@ -19,6 +19,17 @@ const AssignmentsSchema = {
 exports.AssignmentsSchema = AssignmentsSchema
 
 /*
+ * Schema describing required/optional fields of a submissions object.
+ */
+const SubmissionsSchema = {
+  assignmentId: { required: true },
+  studentId: { required: true },
+  timestamp: { required: false },
+  grade: { required: false }
+}
+exports.SubmissionsSchema = SubmissionsSchema
+
+/*
  * Executes a DB query to insert a new assignment into the database.  Returns
  * a Promise that resolves to the ID of the newly-created assignment entry.
  */

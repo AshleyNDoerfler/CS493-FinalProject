@@ -3,14 +3,31 @@
  */
 
 const { Router } = require('express')
+const { GridFsStorage } = require('multer-gridfs-storage');
+const { getMongoUrl } = require('../lib/mongo')
+const multer = require('multer');
+
+// File Storage
+const storage = new GridFsStorage({
+    url: getMongoUrl(),   // Same as the Mongo connect URL you use
+    file: (req, file) => {
+        return {
+            filename: file.originalname,
+            bucketName: 'uploads'
+        };
+    },
+});
+
+const upload = multer({ storage });
 
 const { validateAgainstSchema } = require('../lib/validation')
 const {
   AssignmentsSchema,
+  SubmissionsSchema,
   insertNewAssignment,
   getAssignmentById,
   deleteAssignmentById,
-  updateAssignmentById
+  updateAssignmentById,
 } = require('../models/assignments')
 
 const router = Router()
@@ -22,6 +39,9 @@ router.post('/', async (req, res) => {
   if (validateAgainstSchema(req.body, AssignmentsSchema)) {
     try {
       const id = await insertNewAssignment(req.body)
+      if (!id) {
+        next()
+      }
       res.status(201).send({
         id: id
       })
@@ -94,6 +114,38 @@ router.delete('/:id', async (req, res, next) => {
     console.error(err)
     res.status(500).send({
       error: "Unable to fetch assignment.  Please try again later."
+    })
+  }
+})
+
+/*
+ * POST /assignments/{id}/submissions - Route to create a new submission for an assignment.
+ */
+router.post('/:id/submissions', upload.single('file'), async (req, res) => {
+  // Checks content of submission. Grade is not allowed at creation -- only during a patch
+  if (validateAgainstSchema(req.body, SubmissionsSchema) && !req.body.grade) {
+    try {
+
+      if (!req.file) {
+        return res.status(400).send({ error: 'No file uploaded.' });
+      }
+
+      // setMetadata(req.body.businessId, req.body.caption, req.file.id)
+
+      // await generateThumbnail(req.file.id)
+
+      // Otherwise, the file uploaded successfully!
+      res.status(201).send({"id": req.file.id})
+
+    } catch (err) {
+      console.error(err)
+      res.status(500).send({
+        error: "Error inserting submission into DB.  Please try again later."
+      })
+    }
+  } else {
+    res.status(400).send({
+      error: "Request body is not a valid submission object"
     })
   }
 })
