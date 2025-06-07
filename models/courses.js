@@ -108,4 +108,4 @@ async function bulkInsertNewCourse(course) {
   const result = await collection.insertMany(courseToInsert)
   return result.insertedIds
 }
-exports.bulkInsertNewCourses = bulkInsertNewCourses
+exports.bulkInsertNewCourse = bulkInsertNewCourse
