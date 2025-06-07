@@ -2,7 +2,7 @@ const { Router } = require('express')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const { insertNewUser, getUserById, getUserByEmail, UserSchema } = require('../models/user')
+const { insertNewUser, getUserById, getUserByEmail, UserSchema } = require('../models/users')
 const { validateAgainstSchema } = require('../lib/validation')
 
 const router = Router()
@@ -80,7 +80,7 @@ router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, re
 /*
  * Authenticate a specific User with their email address and password.
  */
-router.post('/login', requireAutorization, isAuthorizedUser, async (req, res) => {
+router.post('/login', requireAuthorization, isAuthorizedUser, async (req, res) => {
     const email = req.body.email
     const password = req.body.password
 
@@ -121,7 +121,7 @@ router.post('/login', requireAutorization, isAuthorizedUser, async (req, res) =>
  * the requested User can fetch this information.
  * 
  */
-router.get('/:id', requireAutorization, async (req, res) => {
+router.get('/:id', requireAuthorization, async (req, res) => {
     try {
         const reqId = req.params.id
         const user = req.user
@@ -159,3 +159,5 @@ router.get('/:id', requireAutorization, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch user info' })
     }
 })
+
+module.exports = router;
