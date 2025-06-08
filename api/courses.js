@@ -21,6 +21,7 @@ const {
 
 // For authorization
 const { requireAuthorization, isAuthorizedUser } = require('../models/users')
+const { getUserById } = require('../models/users');
 
 const router = Router()
 
@@ -65,13 +66,16 @@ router.get('/', async (req, res) => {
 /*
  * POST /courses Create a new course (admin only)
  */
-router.post('/', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin
-
+router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
     if (validateAgainstSchema(req.body, CourseSchema)) {
         try {
             // TODO: Check instructorId is a valid instructor
+            if (req.body.instructorId) {
+                const instructor = await getUserById(req.body.instructorId);
+                if (!instructor || instructor.role !== 'instructor') {
+                    return res.status(400).send({ error: "instructorId must be a valid instructor user." });
+                }
+            }
             const id = await insertNewCourse(req.body);
             res.status(201).send({ id });
         } catch (err) {
@@ -91,8 +95,6 @@ router.get('/:id', async (req, res) => {
         const course = await getCourseId(req.params.id);
         if (course) {
 
-            // Remove students and assignments from response if present
-
             delete course.students;
             delete course.assignments;
             res.status(200).send(course);
@@ -107,11 +109,7 @@ router.get('/:id', async (req, res) => {
 /*
  * PATCH /courses/:id Update data for a specific Course
  */
-router.patch('/:id', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin or instructor
-
-
+router.patch('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
     const allowedFields = ['subject', 'number', 'title', 'term', 'instructorId'];
     const updates = {};
     for (const field of allowedFields) {
@@ -121,8 +119,6 @@ router.patch('/:id', async (req, res) => {
         return res.status(400).send({ error: "No valid fields to update." });
     }
     try {
-
-        // TODO: implement updateCourseById
 
         const updated = await updateCourseById(req.params.id, updates);
         if (updated) {
@@ -138,12 +134,8 @@ router.patch('/:id', async (req, res) => {
 /*
  * DELETE /courses/:id Remove a specific Course (admin only)
  */
-router.delete('/:id', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin
-
+router.delete('/:id', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
     try {
-        // TODO: Implement deleteCourseById
         const deleted = await deleteCourseById(req.params.id);
         if (deleted) {
             res.status(204).end();
@@ -158,12 +150,8 @@ router.delete('/:id', async (req, res) => {
 /*
  * GET /courses/:id/students Fetch a list of the students enrolled in the Course
  */
-router.get('/:id/students', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin/instructor
-
+router.get('/:id/students', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
     try {
-        // TODO: Implement getStudentsByCourseId
         const students = await getStudentsByCourseId(req.params.id);
         if (students) {
             res.status(200).send({ students });
@@ -178,18 +166,12 @@ router.get('/:id/students', async (req, res) => {
 /*
  * POST /courses/:id/students Update enrollment for a Course
  */
-router.post('/:id/students', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin/instructor
-
+router.post('/:id/students', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
     const { add, remove } = req.body;
     if (!Array.isArray(add) && !Array.isArray(remove)) {
         return res.status(400).send({ error: "Request body must contain 'add' and/or 'remove' arrays." });
     }
     try {
-
-        // TODO: iimplement updateEnrollmentByCourseId
-
         const updated = await updateEnrollmentByCourseId(req.params.id, { add, remove });
         if (updated) {
             res.status(200).end();
@@ -204,17 +186,14 @@ router.post('/:id/students', async (req, res) => {
 /*
  * GET /courses/:id/roster fetch a CSV file containing list of the students enrolled in the course
  */
-router.get('/:id/roster', async (req, res) => {
-
-    // TODO: add authentication/authorization middleware for admin/instructor
-
+router.get('/:id/roster', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
     try {
+        
         // TODO: add functionality to download a CSV file
         const students = await getStudentsByCourseId(req.params.id);
         if (!students) {
             return res.status(404).send({ error: "Course not found." });
         }
-        // students should be an array of objects: { id, name, email }
         const csv = students.map(s =>
             `"${s.id}","${s.name}","${s.email}"`
         ).join('\n');
@@ -230,8 +209,6 @@ router.get('/:id/roster', async (req, res) => {
  */
 router.get('/:id/assignments', async (req, res) => {
     try {
-
-        // TODO: Implement getAssignmentsByCourseId
 
         const assignments = await getAssignmentsByCourseId(req.params.id);
         if (assignments) {

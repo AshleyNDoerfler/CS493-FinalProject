@@ -109,3 +109,126 @@ async function bulkInsertNewCourse(course) {
   return result.insertedIds
 }
 exports.bulkInsertNewCourse = bulkInsertNewCourse
+
+/*
+ * Fetch a course by its ID.
+ */
+async function getCourseId(id) {
+  const db = getDbReference()
+  const collection = db.collection('courses')
+  if (!ObjectId.isValid(id)) {
+    return null
+  }
+  const course = await collection.findOne({ _id: new ObjectId(id) })
+  return course
+}
+exports.getCourseId = getCourseId
+
+/*
+ * Update a course by its ID.
+ */
+async function updateCourseById(id, updates) {
+  const db = getDbReference()
+  const collection = db.collection('courses')
+  if (!ObjectId.isValid(id)) {
+    return false
+  }
+  const result = await collection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updates }
+  )
+  return result.matchedCount > 0
+}
+exports.updateCourseById = updateCourseById
+
+/*
+ * Delete a course by its ID.
+ */
+async function deleteCourseById(id) {
+  const db = getDbReference()
+  const collection = db.collection('courses')
+  if (!ObjectId.isValid(id)) {
+    return false
+  }
+  const result = await collection.deleteOne({ _id: new ObjectId(id) })
+  return result.deletedCount > 0
+}
+exports.deleteCourseById = deleteCourseById
+
+/*
+ * Get students enrolled in a course by course ID.
+ */
+async function getStudentsByCourseId(courseId) {
+  const db = getDbReference()
+  const enrollmentCollection = db.collection('enrollment')
+  const usersCollection = db.collection('users')
+  if (!ObjectId.isValid(courseId)) {
+    return null
+  }
+  const enrollments = await enrollmentCollection.find({ courseId: new ObjectId(courseId) }).toArray()
+  const studentIds = enrollments.map(e => e.studentId)
+  const students = await usersCollection.find({ _id: { $in: studentIds } }).toArray()
+  return students.map(s => ({
+    id: s._id.toString(),
+    name: s.name,
+    email: s.email
+  }))
+}
+exports.getStudentsByCourseId = getStudentsByCourseId
+
+/*
+ * Update enrollment for a course by course ID.
+ * Expects { add: [studentId], remove: [studentId] }
+ */
+async function updateEnrollmentByCourseId(courseId, { add = [], remove = [] }) {
+  const db = getDbReference()
+  const enrollmentCollection = db.collection('enrollment')
+  if (!ObjectId.isValid(courseId)) {
+    return false
+  }
+  // Add students
+  if (Array.isArray(add) && add.length > 0) {
+    const addDocs = add.map(studentId => ({
+      courseId: new ObjectId(courseId),
+      studentId: new ObjectId(studentId)
+    }))
+    await enrollmentCollection.insertMany(addDocs)
+  }
+  // Remove students
+  if (Array.isArray(remove) && remove.length > 0) {
+    await enrollmentCollection.deleteMany({
+      courseId: new ObjectId(courseId),
+      studentId: { $in: remove.map(id => new ObjectId(id)) }
+    })
+  }
+  return true
+}
+exports.updateEnrollmentByCourseId = updateEnrollmentByCourseId
+
+/*
+ * Get roster for a course by course ID (returns array of students).
+ */
+async function getRosterByCourseId(courseId) {
+  // Just reuse getStudentsByCourseId
+  return await getStudentsByCourseId(courseId)
+}
+exports.getRosterByCourseId = getRosterByCourseId
+
+/*
+ * Get assignments for a course by course ID.
+ */
+async function getAssignmentsByCourseId(courseId) {
+  const db = getDbReference()
+  const assignmentsCollection = db.collection('assignments')
+  if (!ObjectId.isValid(courseId)) {
+    return null
+  }
+  const assignments = await assignmentsCollection.find({ courseId: new ObjectId(courseId) }).toArray()
+  return assignments.map(a => ({
+    id: a._id.toString(),
+    title: a.title,
+    due: a.due,
+    points: a.points
+  }))
+}
+exports.getAssignmentsByCourseId = getAssignmentsByCourseId
