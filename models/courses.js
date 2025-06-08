@@ -66,3 +66,46 @@ async function insertNewCourse(course) {
   return result.insertedId
 }
 exports.insertNewCourse = insertNewCourse
+
+/*
+ * Executes a DB query to fetch detailed information about a single
+ * specified course based on its ID, including photo data for
+ * the course.  Returns a Promise that resolves to an object containing
+ * information about the requested course.  If no course with the
+ * specified ID exists, the returned Promise will resolve to null.
+ */
+async function getCourseById(id) {
+  const db = getDbReference()
+  const collection = db.collection('course')
+  if (!ObjectId.isValid(id)) {
+    return null
+  } else {
+    const results = await collection.aggregate([
+      { $match: { _id: new ObjectId(id) } },
+      { $lookup: {
+          from: "photos",
+          localField: "_id",
+          foreignField: "courseId",
+          as: "photos"
+      }}
+    ]).toArray()
+    return results[0]
+  }
+}
+exports.getCourseById = getCourseById
+
+/*
+ * Executes a DB query to bulk insert an array new course into the database.
+ * Returns a Promise that resolves to a map of the IDs of the newly-created
+ * course entries.
+ */
+async function bulkInsertNewCourse(course) {
+  const courseToInsert = course.map(function (course) {
+    return extractValidFields(course, CourseSchema)
+  })
+  const db = getDbReference()
+  const collection = db.collection('course')
+  const result = await collection.insertMany(courseToInsert)
+  return result.insertedIds
+}
+exports.bulkInsertNewCourse = bulkInsertNewCourse
