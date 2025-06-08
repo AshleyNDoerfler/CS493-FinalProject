@@ -2,7 +2,7 @@ const { Router } = require('express')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const { insertNewUser, getUserById, getUserByEmail, UserSchema } = require('../models/users')
+const { insertNewUser, getUserById, getUserByEmail, getCoursesByInstructorId, getCoursesByStudentId, UserSchema } = require('../models/users')
 const { validateAgainstSchema } = require('../lib/validation')
 
 const router = Router()
@@ -150,10 +150,7 @@ router.get('/:id', requireAuthorization, async (req, res) => {
             courses = await getCoursesByStudentId(requestedId)
         }
 
-        // Not sure how we should send this. Spec mentions
-        // including a list of courses, but doesn't show 
-        // in response format
-        res.status(200).json(userInfo, courses) 
+        res.status(200).json({ ...userInfo, courses }) 
     } catch (err) {
         console.error(err)
         res.status(500).json({ error: 'Failed to fetch user info' })
