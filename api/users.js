@@ -42,38 +42,37 @@ function requireAuthorization(req, res, next){
  */
 function isAuthorizedUser(...allowedRoles) {
     return function (req, res, next) {
-        const userId = req.params.userId
-        const authenticatedUser = req.user
-
-        if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
+      const userId = req.params.userId
+      const authenticatedUser = req.user
+  
+      if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
         return res.status(401).json({ error: 'Unauthorized' })
-        }
-
-        const isOwner = userId && authenticatedUser.id === userId
-        const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
-        
-        // if (allowedRoles.includes("instructor")) {
-        //     if (req.body.courseId) {
-        //         const courseInstructorId = getCourseInstructor(req.body.courseId)
-        //         if (courseInstructorId !== userId) {
-        //             isAllowedRole = false
-        //         }
-        //     } else {
-        //         res.status(403).json({ error: 'Missing instructorId' })
-        //     }
-        // }
-        // if (allowedRoles.includes("student")) {
-        //     const courseId = getCourseIdFromAssignmentId(req.params.assignmentId)
-        //     if (!studentIsEnrolledIn(courseId, userId)) {
-        //         isAllowedRole = false
-        //     }
-        // }
-
-        if (isOwner || isAllowedRole) {
+      }
+  
+      const isOwner = userId && authenticatedUser.id === userId
+      const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
+      // if (allowedRoles.includes("instructor")) {
+      //     if (req.body.courseId) {
+      //         const courseInstructorId = getCourseInstructor(req.body.courseId)
+      //         if (courseInstructorId !== userId) {
+      //             isAllowedRole = false
+      //         }
+      //     } else {
+      //         res.status(403).json({ error: 'Missing instructorId' })
+      //     }
+      // }
+      // if (allowedRoles.includes("student")) {
+      //     const courseId = getCourseIdFromAssignmentId(req.params.assignmentId)
+      //     if (!studentIsEnrolledIn(courseId, userId)) {
+      //         isAllowedRole = false
+      //     }
+      // }
+  
+      if (isOwner || isAllowedRole) {
         next()
-        } else {
+      } else {
         res.status(403).json({ error: 'Insufficient privileges' })
-        }
+      }
     }
   }
   
