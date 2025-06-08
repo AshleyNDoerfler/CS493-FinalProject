@@ -110,10 +110,13 @@ exports.updateAssignmentById = updateAssignmentById
  * Promise that resolves to an array containing the fetched page of submissions.
  */
 async function getSubmissionsPage(page, assignmentId) {
-  const db = getDbReference()
+    const db = getDbReference()
     const files = await db.collection('submissions.files')
       .find({ "metadata.assignmentId": assignmentId });
     const count = await db.collection('submissions.files').countDocuments({ "metadata.assignmentId": assignmentId })
+    // console.log(count)
+    // const oneDoc = await db.collection('submissions.files').findOne();
+    // console.log(JSON.stringify(oneDoc, null, 2));
 
   /*
    * Compute last page number and make sure page is within allowed bounds.
@@ -148,3 +151,16 @@ async function getSubmissionsPage(page, assignmentId) {
   }
 }
 exports.getSubmissionsPage = getSubmissionsPage
+
+async function setMetadata(data, submissionId) {
+  const db = getDbReference()
+  await db.collection('submissions.files').updateOne(
+    { _id: submissionId },
+    { $set: {
+      "metadata.studentId": data.studentId,
+      "metadata.grade": null,
+      "metadata.timestamp": Date.now()
+    }}
+  );
+}
+exports.setMetadata = setMetadata

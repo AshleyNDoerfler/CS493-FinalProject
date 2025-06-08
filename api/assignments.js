@@ -31,7 +31,8 @@ const {
   getAssignmentById,
   deleteAssignmentById,
   updateAssignmentById,
-  getSubmissionsPage
+  getSubmissionsPage,
+  setMetadata
 } = require('../models/assignments')
 
 const router = Router()
@@ -162,9 +163,7 @@ router.post('/:id/submissions', upload.single('file'), async (req, res) => {
         return res.status(400).send({ error: 'No file uploaded.' });
       }
 
-      // setMetadata(req.body.businessId, req.body.caption, req.file.id)
-
-      // await generateThumbnail(req.file.id)
+      setMetadata(req.body, req.file.id)
 
       // Otherwise, the file uploaded successfully!
       res.status(201).send({"id": req.file.id})
