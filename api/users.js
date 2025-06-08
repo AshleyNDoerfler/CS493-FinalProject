@@ -51,6 +51,22 @@ function isAuthorizedUser(...allowedRoles) {
   
       const isOwner = userId && authenticatedUser.id === userId
       const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
+      // if (allowedRoles.includes("instructor")) {
+      //     if (req.body.courseId) {
+      //         const courseInstructorId = getCourseInstructor(req.body.courseId)
+      //         if (courseInstructorId !== userId) {
+      //             isAllowedRole = false
+      //         }
+      //     } else {
+      //         res.status(403).json({ error: 'Missing instructorId' })
+      //     }
+      // }
+      // if (allowedRoles.includes("student")) {
+      //     const courseId = getCourseIdFromAssignmentId(req.params.assignmentId)
+      //     if (!studentIsEnrolledIn(courseId, userId)) {
+      //         isAllowedRole = false
+      //     }
+      // }
   
       if (isOwner || isAllowedRole) {
         next()
