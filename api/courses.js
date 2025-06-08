@@ -19,6 +19,9 @@ const {
     getAssignmentsByCourseId
   } = require('../models/courses')
 
+// For authorization
+const { requireAuthorization, isAuthorizedUser } = require('../models/users')
+
 const router = Router()
 
 /*
