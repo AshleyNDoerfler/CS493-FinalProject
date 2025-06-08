@@ -4,7 +4,7 @@
 
 const bcrypt = require('bcrypt');
 
-// const { ObjectId } = require('mongodb')
+const { ObjectId } = require('mongodb')
 
 const { getDbReference } = require('../lib/mongo')
 const { extractValidFields } = require('../lib/validation')
@@ -18,7 +18,7 @@ const UserSchema = {
   password: { required: true }, 
   role: { required: true }, 
 }
-exports.UserSchema
+exports.UserSchema = UserSchema;
 
 const UserClientFields = ['name', 'email', 'password', 'role']
 exports.UserClientFields = UserClientFields
@@ -65,16 +65,24 @@ exports.getUserById = getUserById
  * Return a User's (instructor) courses
  */
 async function getCoursesByInstructorId(id) {
-    // Too tired to finish this tonight
-}
+    const db = getDbReference()
+    const collection = db.collection('courses')
 
+    const courses = await collection.find({ instructorId: new ObjectId(id) }).toArray();
+    return courses.map(course => course._id.toString())
+}
 exports.getCoursesByInstructorId = getCoursesByInstructorId
 
 /*
  * Return a User's (student) courses
  */
 async function getCoursesByStudentId(id) {
-    // Too tired to finish this tonight
+    const db = getDbReference()
+    const collection = db.collection('enrollment')
+    
+    const enrollments = await collection.find({ studentId: new ObjectId(id) }).toArray();
+    
+    return courses.map(course => course._id.toString())
 }
 
 exports.getCoursesByStudentId = getCoursesByStudentId
