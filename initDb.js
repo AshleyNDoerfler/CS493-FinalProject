@@ -1,7 +1,7 @@
 const { connectToDb, getDbReference, closeDbConnection } = require('./lib/mongo')
 const { insertNewAssignment }  = require('./models/assignments')
 
-const assignmentData = require('./data/assignment.json')
+const assignmentData = require('./data/assignments.json')
 
 const mongoCreateUser = process.env.MONGO_CREATE_USER
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD
