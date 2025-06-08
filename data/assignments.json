@@ -1,0 +1,62 @@
+[
+  {
+    "courseId": "CS101",
+    "title": "Introduction to Programming Homework",
+    "points": 100,
+    "due": "2025-06-10T23:59:00Z"
+  },
+  {
+    "courseId": "CS101",
+    "title": "Loops and Conditionals Quiz",
+    "points": 50,
+    "due": "2025-06-14T23:59:00Z"
+  },
+  {
+    "courseId": "CS201",
+    "title": "Data Structures Midterm",
+    "points": 200,
+    "due": "2025-06-20T17:00:00Z"
+  },
+  {
+    "courseId": "CS201",
+    "title": "Linked Lists Coding Assignment",
+    "points": 150,
+    "due": "2025-06-18T23:59:00Z"
+  },
+  {
+    "courseId": "CS301",
+    "title": "Operating Systems Lab 1",
+    "points": 75,
+    "due": "2025-06-12T21:00:00Z"
+  },
+  {
+    "courseId": "CS301",
+    "title": "Thread Scheduling Simulation",
+    "points": 100,
+    "due": "2025-06-22T23:59:00Z"
+  },
+  {
+    "courseId": "CS401",
+    "title": "Capstone Project Proposal",
+    "points": 250,
+    "due": "2025-06-30T23:59:00Z"
+  },
+  {
+    "courseId": "CS401",
+    "title": "Final Capstone Presentation",
+    "points": 300,
+    "due": "2025-07-20T10:00:00Z"
+  },
+  {
+    "courseId": "CS102",
+    "title": "JavaScript Basics Assignment",
+    "points": 80,
+    "due": "2025-06-11T23:59:00Z"
+  },
+  {
+    "courseId": "CS102",
+    "title": "DOM Manipulation Lab",
+    "points": 90,
+    "due": "2025-06-15T23:59:00Z"
+  }
+]

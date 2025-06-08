@@ -25,6 +25,7 @@ const router = Router()
  * GET /courses Route to return a paginated list of courses
  * Supports filtering by subject, number, term
  */
+// Need to add code for if its an authenticated user
 router.get('/', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -241,4 +242,3 @@ router.get('/:id/assignments', async (req, res) => {
 });
 
 module.exports = router;
-
