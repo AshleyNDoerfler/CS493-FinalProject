@@ -114,9 +114,6 @@ async function getSubmissionsPage(page, assignmentId) {
     const files = await db.collection('submissions.files')
       .find({ "metadata.assignmentId": assignmentId });
     const count = await db.collection('submissions.files').countDocuments({ "metadata.assignmentId": assignmentId })
-    // console.log(count)
-    // const oneDoc = await db.collection('submissions.files').findOne();
-    // console.log(JSON.stringify(oneDoc, null, 2));
 
   /*
    * Compute last page number and make sure page is within allowed bounds.
@@ -139,7 +136,8 @@ async function getSubmissionsPage(page, assignmentId) {
     assignmentId: r.metadata.assignmentId,
     studentId: r.metadata.studentId,
     timestamp: r.metadata.timestamp,
-    grade: r.metadata.grade
+    grade: r.metadata.grade,
+    file: `/assignments/${assignmentId}/submissions/media/${r._id}`
   }))
 
   return {
@@ -159,8 +157,9 @@ async function setMetadata(data, submissionId) {
     { $set: {
       "metadata.studentId": data.studentId,
       "metadata.grade": null,
-      "metadata.timestamp": Date.now()
+      "metadata.timestamp": Date.toISOString()
     }}
   );
 }
 exports.setMetadata = setMetadata
+

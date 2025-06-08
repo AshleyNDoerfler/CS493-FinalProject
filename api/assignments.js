@@ -24,6 +24,7 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 
 const { validateAgainstSchema } = require('../lib/validation')
+const { requireAuthorization, isAuthorizedUser } = require('./users')
 const {
   AssignmentsSchema,
   SubmissionsSchema,
@@ -32,7 +33,9 @@ const {
   deleteAssignmentById,
   updateAssignmentById,
   getSubmissionsPage,
-  setMetadata
+  setMetadata,
+  createSubmissionDownloadStream,
+  getSubmissionById
 } = require('../models/assignments')
 
 const router = Router()
@@ -40,7 +43,7 @@ const router = Router()
 /*
  * POST /assignments - Route to create a new assignment.
  */
-router.post('/', async (req, res) => {
+router.post('/', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
   if (validateAgainstSchema(req.body, AssignmentsSchema)) {
     try {
       const id = await insertNewAssignment(req.body)
@@ -85,7 +88,7 @@ router.get('/:id', async (req, res, next) => {
 /*
  * PATCH /assignments/{id} - Route to update a specific assignment.
  */
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res, next) => {
   try {
     const result = await updateAssignmentById(req.params.id, req.body)
     if (result.matchedCount > 0) {
@@ -104,7 +107,7 @@ router.patch('/:id', async (req, res, next) => {
 /*
  * DELETE /assignments/{id} - Route to delete a specific assignment.
  */
-router.delete('/:id', async (req, res, next) => {
+router.delete('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res, next) => {
   try {
     const id = req.params.id
     const result = await deleteAssignmentById(id)
@@ -126,14 +129,13 @@ router.delete('/:id', async (req, res, next) => {
 /*
  * GET /assignments/submissions - Route to return a paginated list of submissions for an assignment.
  */
-router.get('/:id/submissions', async (req, res) => {
+router.get('/:id/submissions', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
   try {
     /*
      * Fetch page info, generate HATEOAS links for surrounding pages and then
      * send response.
      */
     const submissionsPage = await getSubmissionsPage(parseInt(req.query.page) || 1, req.params.id)
-    submissionsPage.links = {}
     if (submissionsPage.page < submissionsPage.totalPages) {
       submissionsPage.links.nextPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.page + 1}`
       submissionsPage.links.lastPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.totalPages}`
@@ -154,7 +156,7 @@ router.get('/:id/submissions', async (req, res) => {
 /*
  * POST /assignments/{id}/submissions - Route to create a new submission for an assignment.
  */
-router.post('/:id/submissions', upload.single('file'), async (req, res) => {
+router.post('/:id/submissions', requireAuthorization, isAuthorizedUser('student'), upload.single('file'), async (req, res) => {
   // Checks content of submission. Grade is not allowed at creation -- only during a patch
   if (validateAgainstSchema(req.body, SubmissionsSchema) && !req.body.grade) {
     try {
@@ -180,5 +182,3 @@ router.post('/:id/submissions', upload.single('file'), async (req, res) => {
     })
   }
 })
-
-module.exports = router
