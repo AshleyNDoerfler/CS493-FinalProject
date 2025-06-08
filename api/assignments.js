@@ -24,7 +24,7 @@ const storage = new GridFsStorage({
 const upload = multer({ storage });
 
 const { validateAgainstSchema } = require('../lib/validation')
-const { requireAuthorization, isAuthorizedUser } = require('./users')
+const { requireAuthorization, isAuthorizedUser } = require('../models/users')
 const {
   AssignmentsSchema,
   SubmissionsSchema,

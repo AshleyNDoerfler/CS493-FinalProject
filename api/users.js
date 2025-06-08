@@ -2,80 +2,10 @@ const { Router } = require('express')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 
-const { insertNewUser, getUserById, getUserByEmail, getCoursesByInstructorId, getCoursesByStudentId, UserSchema } = require('../models/users')
+const { insertNewUser, getUserById, getUserByEmail, getCoursesByInstructorId, getCoursesByStudentId, requireAuthorization, isAuthorizedUser, UserSchema } = require('../models/users')
 const { validateAgainstSchema } = require('../lib/validation')
 
 const router = Router()
-
-const jwtKey = process.env.JWT_SECRET_KEY;
-
-function requireAuthorization(req, res, next){
-  try{
-    const auth_value = req.get('Authorization')
-
-    if(!auth_value || !auth_value.startsWith("Bearer")) {
-      return res.status(401).send("Incorrect Token")
-    }
-
-    const token = auth_value.split(" ")[1]
-
-    const payload = jwt.verify(token, jwtKey)
-
-    console.log("Payload " + payload)
-
-    req.user = payload.sub
-    next()
-  } catch (err) {
-    res.status(403).send("Unable to Authorize User")
-    next(err)
-  }
-}
-
-/*
- * Authorizes a user
- * 
- * Parameters:
- *  allowedRoles - who is authorized for this action? (Student, admin, instructor)
- * 
- * ex: 
- *  isAuthorizedUser('admin')
- */
-function isAuthorizedUser(...allowedRoles) {
-    return function (req, res, next) {
-      const userId = req.params.userId
-      const authenticatedUser = req.user
-  
-      if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
-        return res.status(401).json({ error: 'Unauthorized' })
-      }
-  
-      const isOwner = userId && authenticatedUser.id === userId
-      const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
-      // if (allowedRoles.includes("instructor")) {
-      //     if (req.body.courseId) {
-      //         const courseInstructorId = getCourseInstructor(req.body.courseId)
-      //         if (courseInstructorId !== userId) {
-      //             isAllowedRole = false
-      //         }
-      //     } else {
-      //         res.status(403).json({ error: 'Missing instructorId' })
-      //     }
-      // }
-      // if (allowedRoles.includes("student")) {
-      //     const courseId = getCourseIdFromAssignmentId(req.params.assignmentId)
-      //     if (!studentIsEnrolledIn(courseId, userId)) {
-      //         isAllowedRole = false
-      //     }
-      // }
-  
-      if (isOwner || isAllowedRole) {
-        next()
-      } else {
-        res.status(403).json({ error: 'Insufficient privileges' })
-      }
-    }
-  }
-  
 
 /*
  * Authenticated Admin can create a User

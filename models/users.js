@@ -9,6 +9,8 @@ const { ObjectId } = require('mongodb')
 const { getDbReference } = require('../lib/mongo')
 const { extractValidFields } = require('../lib/validation')
 
+const jwtKey = process.env.JWT_SECRET_KEY;
+
 /*
  * Schema describing required/optional fields of a User object.
  */
@@ -22,6 +24,59 @@ exports.UserSchema = UserSchema;
 
 const UserClientFields = ['name', 'email', 'password', 'role']
 exports.UserClientFields = UserClientFields
+
+function requireAuthorization(req, res, next){
+  try{
+    const auth_value = req.get('Authorization')
+
+    if(!auth_value || !auth_value.startsWith("Bearer")) {
+      return res.status(401).send("Incorrect Token")
+    }
+
+    const token = auth_value.split(" ")[1]
+
+    const payload = jwt.verify(token, jwtKey)
+
+    console.log("Payload " + payload)
+
+    req.user = payload.sub
+    next()
+  } catch (err) {
+    res.status(403).send("Unable to Authorize User")
+    next(err)
+  }
+}
+exports.requireAuthorization = requireAuthorization
+
+/*
+ * Authorizes a user
+ * 
+ * Parameters:
+ *  allowedRoles - who is authorized for this action? (Student, admin, instructor)
+ * 
+ * ex: 
+ *  isAuthorizedUser('admin')
+ */
+function isAuthorizedUser(...allowedRoles) {
+  return function (req, res, next) {
+    const userId = req.params.userId
+    const authenticatedUser = req.user
+  
+    if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+  
+    const isOwner = userId && authenticatedUser.id === userId
+    const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
+  
+    if (isOwner || isAllowedRole) {
+      next()
+    } else {
+      res.status(403).json({ error: 'Insufficient privileges' })
+    }
+  }
+}
+exports.isAuthorizedUser = isAuthorizedUser
 
 /*
  * Insert new User into the database
