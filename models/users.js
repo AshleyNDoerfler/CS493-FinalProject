@@ -19,6 +19,7 @@ const UserSchema = {
   email: { required: true }, 
   password: { required: true }, 
   role: { required: true }, 
+  admin: { required: false, default: false}
 }
 exports.UserSchema = UserSchema;
 
@@ -93,6 +94,30 @@ async function insertNewUser(userData) {
 }
 
 exports.insertNewUser = insertNewUser
+
+
+
+/*
+ * Insert new User into the database
+ */
+async function insertNewAdminUser(userData) {
+  const db = getDbReference()
+  const collection = db.collection('users')
+
+  const newUser = extractValidFields(userData, UserSchema)
+
+  if (newUser.role == "instructor"){
+    newUser.admin = true
+  }
+
+  newUser.password = bcrypt.hash(newUser.password, 8)
+  const result = await collection.insertOne(newUser)
+  return result.insertedId
+}
+
+exports.insertNewAdminUser = insertNewAdminUser
+
+
 
 /*
  * Get a User from the database by email

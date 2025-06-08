@@ -163,3 +163,56 @@ async function setMetadata(data, submissionId) {
 }
 exports.setMetadata = setMetadata
 
+
+
+async function createEnrollment({ assignmentId, studentId= null, courseId= null}) {
+  const db = getDbReference()
+
+  if (!asignmentId) {
+    throw new error('assingmentId is required')
+  }
+
+
+  const assignmentCollection = db.collection('assignments')
+  const submissionCollection = db.collection('submissions.files')
+  const enrollmentCollection = db.collection('enrollment')
+
+  const assignmentObjectId = new ObjectId(assignmentId)
+
+
+  // if studentId is provided
+  if (studentId && !courseId) {
+    const assignment = await assignmentCollection.findOne({ _id: assignmentObjectId })
+    if (!assignment) throw new Error('Assignment not found')
+      courseId = assignment.courseId
+  }
+
+  // if courseId is provided
+  if (courseId && !studentId) {
+    const submission = await submissionCollection.findOne({ assignmentId: assignmentObjectId })
+    if (!submission) throw new Error('Submission not found')
+      studentId = submission.studentId
+  }
+
+
+  // check if already enrolled
+  const existingEnrollment = await enrollmentCollection.findOne({
+    userId: new ObjectId(studentId),
+    courseId: new ObjectId(courseId)
+  })
+
+  if (existingEnrollment) {
+    return { alreadyEnrolled: true }
+  }
+
+  // insert enrollment
+  const result = await existingEnrollment.insertOne({
+    userId: new ObjectId(studentId),
+    courseId: new ObjectId(courseId)
+  })
+
+  return { enrollmentId: result.insertedId }
+
+}
+
+exports.createEnrollment = createEnrollment

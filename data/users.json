@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Alice Johnson",
+    "email": "alice.johnson@example.com",
+    "password": "hashedpassword1",
+    "role": "instructor"
+  },
+  {
+    "name": "Charlie Nguyen",
+    "email": "charlie.nguyen@example.com",
+    "password": "hashedpassword3",
+    "role": "student"
+  },
+  {
+    "name": "Dana Lee",
+    "email": "dana.lee@example.com",
+    "password": "hashedpassword4",
+    "role": "instructor"
+  },
+  {
+    "name": "Eli Martinez",
+    "email": "eli.martinez@example.com",
+    "password": "hashedpassword5",
+    "role": "student"
+  },
+  {
+    "name": "Fatima Khan",
+    "email": "fatima.khan@example.com",
+    "password": "hashedpassword6",
+    "role": "student"
+  },
+  {
+    "name": "George Patel",
+    "email": "george.patel@example.com",
+    "password": "hashedpassword7",
+    "role": "instructor"
+  },
+  {
+    "name": "Hannah Wright",
+    "email": "hannah.wright@example.com",
+    "password": "hashedpassword8",
+    "role": "student"
+  },
+  {
+    "name": "Ian Thompson",
+    "email": "ian.thompson@example.com",
+    "password": "hashedpassword9",
+    "role": "student"
+  },
+  {
+    "name": "Jade Rivera",
+    "email": "jade.rivera@example.com",
+    "password": "hashedpassword10",
+    "role": "instructor"
+  }
+]
