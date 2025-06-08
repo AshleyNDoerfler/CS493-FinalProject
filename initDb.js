@@ -1,16 +1,16 @@
 const { connectToDb, getDbReference, closeDbConnection } = require('./lib/mongo')
-const { bulkInsertNewBusinesses } = require('./models/business')
+const { insertNewAssignment }  = require('./models/assignments')
 
-const businessData = require('./data/businesses.json')
+const assignmentData = require('./data/assignment.json')
 
 const mongoCreateUser = process.env.MONGO_CREATE_USER
 const mongoCreatePassword = process.env.MONGO_CREATE_PASSWORD
 
 connectToDb(async function () {
   /*
-   * Insert initial business data into the database
+   * Insert initial assignment data into the database
    */
-  const ids = await bulkInsertNewBusinesses(businessData)
+  const ids = await insertNewAssignment(assignmentData)
   console.log("== Inserted businesses with IDs:", ids)
 
   /*
