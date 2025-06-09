@@ -14,8 +14,8 @@ curl -s -X POST "$BASE_URL" $AUTH_HEADER \
   -H "Content-Type: application/json" \
   -d '{
     "subject": "CS",
-    "number": "493",
-    "title": "Cloud Application Development",
+    "number": "494",
+    "title": "Cloud Application Development 2",
     "term": "Spring",
     "instructorId": "'"$INSTRUCTOR_ID"'"
   }' | jq
