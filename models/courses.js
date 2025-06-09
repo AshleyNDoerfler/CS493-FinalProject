@@ -115,7 +115,7 @@ exports.bulkInsertNewCourse = bulkInsertNewCourse
  */
 async function getCourseId(id) {
   const db = getDbReference()
-  const collection = db.collection('courses')
+  const collection = db.collection('course')
   if (!ObjectId.isValid(id)) {
     return null
   }
@@ -129,7 +129,7 @@ exports.getCourseId = getCourseId
  */
 async function updateCourseById(id, updates) {
   const db = getDbReference()
-  const collection = db.collection('courses')
+  const collection = db.collection('course')
   if (!ObjectId.isValid(id)) {
     return false
   }
@@ -146,7 +146,7 @@ exports.updateCourseById = updateCourseById
  */
 async function deleteCourseById(id) {
   const db = getDbReference()
-  const collection = db.collection('courses')
+  const collection = db.collection('course')
   if (!ObjectId.isValid(id)) {
     return false
   }

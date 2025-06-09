@@ -1,3 +1,6 @@
+#!/bin/bash
+
+
 status() {
     printf "\n=====================================================\n"
     printf "%s\n" "$1"
@@ -6,7 +9,7 @@ status() {
 
 # curl -X POST http://localhost:8000/users \
 #   -H "Content-Type: application/json" \
-#   -d '{"name": "Admin", "email":"admin@example.com","password":"hello", "role": "admin"}'
+#   -d '{"name": "Instructor", "email":"instructor@example.com","password":"hello", "role": "instructor"}'
 
 # curl -X POST http://localhost:8000/users \
 #   -H "Content-Type: application/json" \
@@ -19,6 +22,14 @@ status() {
 
 # Assignments Tests
 #
+# status 'Add new admin'
+# curl -X POST http://localhost:8000/users/login
+#   -H "Content-Type: application/json" \
+#   -d '{
+#     "courseId": "683df138a9b1f74a58046c20",
+#     "email": "alice.johnson@example.com",
+#     "password": "hashedpassword1"
+#   }'
 
 # status 'POST assignments succeeds'
 # curl -X POST http://localhost:8000/assignments \

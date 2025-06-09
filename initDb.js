@@ -11,7 +11,7 @@ connectToDb(async function () {
    * Insert initial assignment data into the database
    */
   // const ids = await insertNewAssignment(assignmentData)
-  console.log("== Inserted assignments with IDs:", ids)
+  // console.log("== Inserted assignments with IDs:", ids)
 
   /*
    * Create a new, lower-privileged database user if the correct environment

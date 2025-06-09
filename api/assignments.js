@@ -136,6 +136,7 @@ router.get('/:id/submissions', async (req, res) => {
      * send response.
      */
     const submissionsPage = await getSubmissionsPage(parseInt(req.query.page) || 1, req.params.id)
+    submissionsPage.links = {}
     if (submissionsPage.page < submissionsPage.totalPages) {
       submissionsPage.links.nextPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.page + 1}`
       submissionsPage.links.lastPage = `/assignments/${req.params.id}/submissions?page=${submissionsPage.totalPages}`
@@ -156,7 +157,7 @@ router.get('/:id/submissions', async (req, res) => {
 /*
  * POST /assignments/{id}/submissions - Route to create a new submission for an assignment.
  */
-router.post('/:id/submissions', async (req, res) => {
+router.post('/:id/submissions', upload.single('file'), async (req, res) => {
   // Checks content of submission. Grade is not allowed at creation -- only during a patch
   if (validateAgainstSchema(req.body, SubmissionsSchema) && !req.body.grade) {
     try {
@@ -182,3 +183,5 @@ router.post('/:id/submissions', async (req, res) => {
     })
   }
 })
+
+module.exports = router

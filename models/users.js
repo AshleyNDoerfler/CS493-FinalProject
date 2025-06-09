@@ -72,30 +72,30 @@ exports.requireAuthorization = requireAuthorization
  * ex: 
  *  isAuthorizedUser('admin')
  */
-async function isAuthorizedUser(...allowedRoles) {
+function isAuthorizedUser(...allowedRoles) {
   return async function (req, res, next) {
-    try{
-      const userId = req.params.userId
-      const db = getDBReference();
-      const collection = db.collection('users')
-      const authenticatedUser = await collection.findOne({ _id: userId })
-    
-      if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
-        return res.status(401).json({ error: 'Unauthorized' })
+    try {
+      const userId = req.user?.id || req.user?.sub;
+      const userRole = req.user?.role;
+      const targetId = req.params.id || req.params.userId;       if (!userId || !userRole) {
+        return res.status(401).json({ error: 'Missing authentication information.' });
       }
-    
-      const isOwner = userId && authenticatedUser.id === userId
-      const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
-    
-      if (isOwner || isAllowedRole) {
-        next()
+
+      const isAllowedRole = allowedRoles.includes(userRole);
+      const isOwner = targetId && userId.toString() === targetId.toString();
+
+      if (isAllowedRole || isOwner) {
+        next();
       } else {
-        res.status(403).json({ error: 'Insufficient privileges' })
+        res.status(403).json({ error: 'Privilege error' });
       }
+
     } catch (err) {
-    console.error("Auth error", err)
-  }
-}}
+      console.error('Auth error:', err);
+      res.status(500).json({ error: 'Internal server error during authorization.' });
+    }
+  };
+}
 exports.isAuthorizedUser = isAuthorizedUser
 
 /*
@@ -135,7 +135,7 @@ exports.getUserByEmail = getUserByEmail
 async function getUserById(id) {
     const db = getDbReference()
     const collection = db.collection('users')
-    return await collection.findOne({ _id: id })
+    return await collection.findOne({ _id: new ObjectId(id) })
 }
   
 exports.getUserById = getUserById
