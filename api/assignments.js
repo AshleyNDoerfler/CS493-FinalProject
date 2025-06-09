@@ -43,7 +43,7 @@ const router = Router()
 /*
  * POST /assignments - Route to create a new assignment.
  */
-router.post('/', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
+router.post('/', async (req, res) => {
   if (validateAgainstSchema(req.body, AssignmentsSchema)) {
     try {
       const id = await insertNewAssignment(req.body)
@@ -88,7 +88,7 @@ router.get('/:id', async (req, res, next) => {
 /*
  * PATCH /assignments/{id} - Route to update a specific assignment.
  */
-router.patch('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res, next) => {
+router.patch('/:id', async (req, res, next) => {
   try {
     const result = await updateAssignmentById(req.params.id, req.body)
     if (result.matchedCount > 0) {
@@ -107,7 +107,7 @@ router.patch('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor
 /*
  * DELETE /assignments/{id} - Route to delete a specific assignment.
  */
-router.delete('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res, next) => {
+router.delete('/:id', async (req, res, next) => {
   try {
     const id = req.params.id
     const result = await deleteAssignmentById(id)
@@ -129,7 +129,7 @@ router.delete('/:id', requireAuthorization, isAuthorizedUser('admin', 'instructo
 /*
  * GET /assignments/submissions - Route to return a paginated list of submissions for an assignment.
  */
-router.get('/:id/submissions', requireAuthorization, isAuthorizedUser('admin', 'instructor'), async (req, res) => {
+router.get('/:id/submissions', async (req, res) => {
   try {
     /*
      * Fetch page info, generate HATEOAS links for surrounding pages and then
@@ -156,7 +156,7 @@ router.get('/:id/submissions', requireAuthorization, isAuthorizedUser('admin', '
 /*
  * POST /assignments/{id}/submissions - Route to create a new submission for an assignment.
  */
-router.post('/:id/submissions', requireAuthorization, isAuthorizedUser('student'), upload.single('file'), async (req, res) => {
+router.post('/:id/submissions', async (req, res) => {
   // Checks content of submission. Grade is not allowed at creation -- only during a patch
   if (validateAgainstSchema(req.body, SubmissionsSchema) && !req.body.grade) {
     try {

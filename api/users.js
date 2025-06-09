@@ -10,14 +10,14 @@ const router = Router()
 /*
  * Authenticated Admin can create a User
  */
-router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
+router.post('/', async (req, res) => {
     if (!validateAgainstSchema(req.body, UserSchema)) {
         return res.status(400).json({ error: "Missing or invalid user fields" })
     }
 
-    try{
+    try {
         const user = await insertNewUser(req.body)
-        res.status(201).send({ id: user.id })
+        res.status(201).send({ id: user })
     } catch (e) {
         console.error(e)
     }
@@ -26,7 +26,7 @@ router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, re
 /*
  * Authenticate a specific User with their email address and password.
  */
-router.post('/login', requireAuthorization, isAuthorizedUser, async (req, res) => {
+router.post('/login', async (req, res) => {
     const email = req.body.email
     const password = req.body.password
 

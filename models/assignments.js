@@ -34,16 +34,21 @@ exports.SubmissionsSchema = SubmissionsSchema
  * a Promise that resolves to the ID of the newly-created assignment entry.
  */
 async function insertNewAssignment(assignment) {
-  assignment = extractValidFields(assignment, AssignmentsSchema)
-  if (ObjectId.isValid(assignment.courseId)) {
-    assignment.courseId = new ObjectId(assignment.courseId);
-  } else {
-    return null;
+  try {
+    assignment = extractValidFields(assignment, AssignmentsSchema)
+    if (ObjectId.isValid(assignment.courseId)) {
+      assignment.courseId = new ObjectId(assignment.courseId);
+    } else {
+      return null;
+    }
+    const db = getDbReference()
+    const collection = await db.collection('assignments')
+    const result = await collection.insertOne(assignment)
+    return result.insertedId
+  } catch (err) {
+    console.error("Failed to insert new assignment:", err)
+    throw err
   }
-  const db = getDbReference()
-  const collection = db.collection('assignments')
-  const result = await collection.insertOne(assignment)
-  return result.insertedId
 }
 exports.insertNewAssignment = insertNewAssignment
 

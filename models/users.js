@@ -25,14 +25,29 @@ exports.UserSchema = UserSchema;
 const UserClientFields = ['name', 'email', 'password', 'role']
 exports.UserClientFields = UserClientFields
 
-function requireAuthorization(req, res, next){
+async function createAdminUser(name, email, password) {
+  const adminData = {
+    name,
+    email,
+    password,
+    role: 'admin'
+  }
+  return await insertNewUser(adminData)
+}
+
+exports.createAdminUser = createAdminUser
+
+async function requireAuthorization(req, res, next){
   try{
+    console.log("Checking Authorization")
+    console.log(req)
+
     const auth_value = req.get('Authorization')
 
     if(!auth_value || !auth_value.startsWith("Bearer")) {
       return res.status(401).send("Incorrect Token")
     }
-
+    
     const token = auth_value.split(" ")[1]
 
     const payload = jwt.verify(token, jwtKey)
@@ -57,25 +72,30 @@ exports.requireAuthorization = requireAuthorization
  * ex: 
  *  isAuthorizedUser('admin')
  */
-function isAuthorizedUser(...allowedRoles) {
-  return function (req, res, next) {
-    const userId = req.params.userId
-    const authenticatedUser = req.user
-  
-    if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-  
-    const isOwner = userId && authenticatedUser.id === userId
-    const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
-  
-    if (isOwner || isAllowedRole) {
-      next()
-    } else {
-      res.status(403).json({ error: 'Insufficient privileges' })
-    }
+async function isAuthorizedUser(...allowedRoles) {
+  return async function (req, res, next) {
+    try{
+      const userId = req.params.userId
+      const db = getDBReference();
+      const collection = db.collection('users')
+      const authenticatedUser = await collection.findOne({ _id: userId })
+    
+      if (!authenticatedUser || !authenticatedUser.id || !authenticatedUser.role) {
+        return res.status(401).json({ error: 'Unauthorized' })
+      }
+    
+      const isOwner = userId && authenticatedUser.id === userId
+      const isAllowedRole = allowedRoles.includes(authenticatedUser.role)
+    
+      if (isOwner || isAllowedRole) {
+        next()
+      } else {
+        res.status(403).json({ error: 'Insufficient privileges' })
+      }
+    } catch (err) {
+    console.error("Auth error", err)
   }
-}
+}}
 exports.isAuthorizedUser = isAuthorizedUser
 
 /*
@@ -84,11 +104,15 @@ exports.isAuthorizedUser = isAuthorizedUser
 async function insertNewUser(userData) {
   const db = getDbReference()
   const collection = db.collection('users')
+  console.log(`== Inserting new user with data: ${JSON.stringify(userData)}`)
 
   const newUser = extractValidFields(userData, UserSchema)
+  console.log(`== Inserting new user: ${JSON.stringify(newUser)}`)
   
-  newUser.password = bcrypt.hash(newUser.password, 8)
+  newUser.password = await bcrypt.hash(newUser.password, 8)
+  console.log(`== Hashed password for new user ${newUser.password}`)
   const result = await collection.insertOne(newUser)
+  console.log(`== Inserted new user with ID ${result.insertedId}`)
   return result.insertedId
 }
 

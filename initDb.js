@@ -10,7 +10,7 @@ connectToDb(async function () {
   /*
    * Insert initial assignment data into the database
    */
-  const ids = await insertNewAssignment(assignmentData)
+  // const ids = await insertNewAssignment(assignmentData)
   console.log("== Inserted assignments with IDs:", ids)
 
   /*

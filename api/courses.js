@@ -66,7 +66,7 @@ router.get('/', async (req, res) => {
 /*
  * POST /courses Create a new course (admin only)
  */
-router.post('/', requireAuthorization, isAuthorizedUser('admin'), async (req, res) => {
+router.post('/', requireAuthorization, isAuthorizedUser(['admin']), async (req, res) => {
     if (validateAgainstSchema(req.body, CourseSchema)) {
         try {
             // TODO: Check instructorId is a valid instructor
